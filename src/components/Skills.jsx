@@ -1,49 +1,11 @@
-import { useEffect, useReducer } from 'react';
-import axios from 'axios';
 import Circle from 'react-circle';
-import { skillReducer, initialState, actionTypes } from '../reducers/skillReducer';
 import { requestStates } from '../constants';
+import { useSkills } from '../customHooks/useSkills';
 
 export const Skills = () => {
     
-    const [state, dispatch] = useReducer(skillReducer, initialState);
+    const [sortedLanguageList, fetchRequestState, converseCountToPercentage] = useSkills();
     
-    useEffect(() => {
-        dispatch({ type: actionTypes.fetch });
-        axios.get('https://api.github.com/users/achallenger1234/repos')
-        .then((response) => {
-            const languageList = response.data.map(res => res.language);
-            const countedLanguageList = generateLaunguageCountObj(languageList);
-            dispatch({ type:actionTypes.success, payload: { languageList: countedLanguageList } })
-        })
-        .catch(() => {
-            dispatch({ type: actionTypes.error });
-        });
-
-    }, []);
-    
-    const generateLaunguageCountObj = (allLanguageList) => {
-        const notNullLanguageList = allLanguageList.filter(language => language != null);
-        const uniqueLanguageList = [...new Set(notNullLanguageList)];
-        
-        return uniqueLanguageList.map(item => {
-            return {
-                language: item,
-                count: allLanguageList.filter(language => language === item).length
-            }
-        })
-
-    }
-    
-    const converseCountToPercentage = (count) => {
-        if(count > 10) {return 100;}
-        return count * 10;
-    };
-
-    const sortedLanguageList = () => (
-        state.languageList.sort((firstLang, nextLang) => nextLang.count -firstLang.count) 
-    )
-
     return(
         <div id="skills">
             <div className="container">
@@ -53,12 +15,12 @@ export const Skills = () => {
                 <div className="skills-container">
                 
                     {
-                        state.requestState === requestStates.loading && (
+                        fetchRequestState === requestStates.loading && (
                             <p className="description">取得中・・・</p>
                         )
                     }
                     {
-                        state.requestState === requestStates.success&& (
+                        fetchRequestState === requestStates.success&& (
 
                             sortedLanguageList().map((item, index) => (
                             
@@ -76,7 +38,7 @@ export const Skills = () => {
                         )
                     }
                     {
-                        state.requestState === requestStates.error && (
+                        fetchRequestState === requestStates.error && (
                             <p className="description">エラーが発生しました</p>
                         )
                     }
